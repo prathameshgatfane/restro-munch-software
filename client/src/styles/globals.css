@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@import './variables.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-800 font-sans antialiased selection:bg-orange-100 selection:text-orange-700;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+}
+
+/* Premium micro-animations */
+.hover-scale {
+  @apply transition-transform duration-200 ease-out hover:scale-[1.02] active:scale-[0.98];
+}
+
+.hover-glow-orange {
+  @apply transition-all duration-200 hover:shadow-[0_0_15px_rgba(249,115,22,0.2)] hover:border-orange-500;
+}
+
+.hover-glow-guava {
+  @apply transition-all duration-200 hover:shadow-[0_0_15px_rgba(244,63,94,0.2)] hover:border-guava-500;
+}

@@ -1,0 +1,35 @@
+/* Print Stylesheet for 80mm Thermal Receipt Printers */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+  
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    margin: 0;
+    padding: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #000;
+    background: #fff;
+  }
+
+  /* Hide default browser headers/footers */
+  @page {
+    size: auto;
+    margin: 0mm;
+  }
+
+  /* Keep table rows together */
+  tr, img {
+    page-break-inside: avoid;
+  }
+}
