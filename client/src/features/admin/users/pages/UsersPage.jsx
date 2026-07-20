@@ -135,12 +135,12 @@ export const UsersPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Staff Management</h1>
           <p className="text-xs text-gray-500 mt-1">Manage credentials, assign roles and review audits logs</p>
         </div>
-        <Button variant="primary" onClick={handleAddClick}>Add Staff Member</Button>
+        <Button variant="primary" onClick={handleAddClick} className="w-full sm:w-auto">Add Staff Member</Button>
       </div>
 
       <Card>
@@ -188,7 +188,7 @@ export const UsersPage = () => {
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-3 md:px-3.5 md:py-2.5 bg-white border border-gray-200 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
               required
             >
               {Object.entries(ROLE_LABELS).map(([key, label]) => (

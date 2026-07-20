@@ -34,7 +34,7 @@ export const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden sm:overflow-y-auto">
       {/* Backdrop overlay */}
       <div
         className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
@@ -43,29 +43,29 @@ export const Modal = ({
 
       {/* Modal Dialog Card */}
       <div
-        className={`w-full ${sizeClasses[size]} bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all flex flex-col z-10`}
+        className={`w-full ${sizeClasses[size]} bg-white rounded-t-2xl sm:rounded-xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all flex flex-col z-10 h-[90vh] sm:h-auto max-h-[90vh] sm:max-h-[95vh]`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-          {title && <h3 className="text-base font-bold text-gray-900">{title}</h3>}
+          {title && <h3 className="text-base md:text-lg font-bold text-gray-900">{title}</h3>}
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+            className="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="px-5 py-5 overflow-y-auto flex-1 max-h-[70vh]">
+        <div className="px-5 py-5 overflow-y-auto flex-1 max-h-[calc(90vh-10rem)] sm:max-h-[70vh]">
           {children}
         </div>
 
         {/* Footer */}
         {footerActions && (
-          <div className="px-5 py-3.5 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-2">
+          <div className="px-5 py-3.5 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-2 flex-wrap sm:flex-nowrap">
             {footerActions}
           </div>
         )}

@@ -29,7 +29,7 @@ export const Input = forwardRef(({
         ref={ref}
         type={type}
         id={inputId}
-        className={`w-full px-3.5 py-2.5 bg-white border rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-0 ${
+        className={`w-full px-4 py-3 md:py-2.5 bg-white border rounded-lg text-sm md:text-base transition-all focus:outline-none focus:ring-2 focus:ring-offset-0 ${
           error
             ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500'
             : 'border-gray-200 text-gray-800 placeholder-gray-400 focus:ring-orange-500 focus:border-orange-500 hover:border-gray-300'

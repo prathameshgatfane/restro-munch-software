@@ -10,6 +10,7 @@ import InventoryPage from '../features/admin/inventory/pages/InventoryPage';
 import UsersPage from '../features/admin/users/pages/UsersPage';
 import SettingsPage from '../features/admin/settings/pages/SettingsPage';
 import ReportsPage from '../features/reports/pages/ReportsPage';
+import RestaurantManagementPage from '../features/admin/users/pages/RestaurantManagementPage';
 
 import ProtectedRoute from './ProtectedRoute';
 import RoleBasedRoute from './RoleBasedRoute';
@@ -37,9 +38,9 @@ export const AppRoutes = () => {
         {/* Dashboard Landing */}
         <Route path="/dashboard" element={<DashboardPage />} />
 
-        {/* POS Page (Accessible by Admin, Manager, Cashier) */}
+        {/* POS Page (Accessible by Admin, Manager, Cashier, Waiter) */}
         <Route
-          element={<RoleBasedRoute roles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER]} />}
+          element={<RoleBasedRoute roles={[ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER, ROLES.WAITER]} />}
         >
           <Route path="/pos" element={<POSPage />} />
         </Route>
@@ -66,6 +67,13 @@ export const AppRoutes = () => {
           element={<RoleBasedRoute roles={[ROLES.ADMIN]} />}
         >
           <Route path="/admin/users" element={<UsersPage />} />
+        </Route>
+
+        {/* Super Admin - SaaS Tenant Management */}
+        <Route
+          element={<RoleBasedRoute roles={[ROLES.SUPER_ADMIN]} />}
+        >
+          <Route path="/super-admin/restaurants" element={<RestaurantManagementPage />} />
         </Route>
       </Route>
 

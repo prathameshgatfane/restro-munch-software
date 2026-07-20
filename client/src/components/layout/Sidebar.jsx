@@ -30,7 +30,7 @@ export const Sidebar = ({ isOpen, onToggle, userRole = ROLES.ADMIN }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
         </svg>
       ),
-      roles: [ROLES.ADMIN, ROLES.CASHIER, ROLES.MANAGER],
+      roles: [ROLES.ADMIN, ROLES.CASHIER, ROLES.MANAGER, ROLES.WAITER],
     },
     {
       to: '/kitchen',
@@ -93,74 +93,102 @@ export const Sidebar = ({ isOpen, onToggle, userRole = ROLES.ADMIN }) => {
       ),
       roles: [ROLES.ADMIN, ROLES.MANAGER],
     },
+    {
+      to: '/super-admin/restaurants',
+      label: 'SaaS Restaurants',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+      roles: [ROLES.SUPER_ADMIN],
+    },
   ];
 
   // Filter links by current user role
   const activeLinks = allLinks.filter((link) => link.roles.includes(userRole));
 
+  const handleLinkClick = () => {
+    // If mobile, auto-close sidebar
+    if (window.innerWidth < 768 && isOpen) {
+      onToggle();
+    }
+  };
+
   return (
-    <aside
-      className={`fixed top-0 bottom-0 left-0 z-40 bg-gray-900 border-r border-gray-800 flex flex-col transition-all duration-300 ${
-        isOpen ? 'w-64' : 'w-16 sm:w-20'
-      }`}
-    >
-      {/* Brand Header */}
-      <div className="h-16 flex items-center px-4 border-b border-gray-800 bg-gray-950 gap-3 overflow-hidden">
-        {/* Themed Logo symbol */}
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-orange-500 to-guava-500 flex items-center justify-center flex-shrink-0 font-bold text-white text-sm shadow">
-          RM
-        </div>
-        {isOpen && (
-          <span className="font-bold text-white text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 to-guava-400 bg-clip-text text-transparent">
-            Restro Munch
-          </span>
-        )}
-      </div>
-
-      {/* Navigation Links list */}
-      <nav className="flex-1 py-4 px-2 overflow-y-auto space-y-1">
-        {activeLinks.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 group ${
-                isActive
-                  ? 'bg-orange-500 text-white shadow-[0_4px_12px_rgba(249,115,22,0.2)]'
-                  : 'text-gray-400 hover:bg-gray-800/60 hover:text-gray-200'
-              }`
-            }
-          >
-            <span className="flex-shrink-0">{link.icon}</span>
-            {(isOpen) && (
-              <span className="whitespace-nowrap transition-opacity duration-300 opacity-100">
-                {link.label}
-              </span>
-            )}
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Collapse button at bottom */}
-      <div className="p-3 border-t border-gray-800 bg-gray-950/40 flex justify-center">
-        <button
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity duration-300"
           onClick={onToggle}
-          className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors focus:outline-none"
-          title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-        >
-          <svg
-            className={`w-5 h-5 transform transition-transform duration-300 ${
-              isOpen ? 'rotate-0' : 'rotate-180'
-            }`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        />
+      )}
+
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-40 bg-gray-900 border-r border-gray-800 flex flex-col transition-all duration-300 ${
+          isOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0'
+        } ${!isOpen ? 'md:w-20' : 'md:w-64'}`}
+      >
+        {/* Brand Header */}
+        <div className="h-16 flex items-center px-4 border-b border-gray-800 bg-gray-950 gap-3 overflow-hidden">
+          {/* Themed Logo symbol */}
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-orange-500 to-guava-500 flex items-center justify-center flex-shrink-0 font-bold text-white text-sm shadow">
+            RM
+          </div>
+          {isOpen && (
+            <span className="font-bold text-white text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 to-guava-400 bg-clip-text text-transparent">
+              Restro Munch
+            </span>
+          )}
+        </div>
+
+        {/* Navigation Links list */}
+        <nav className="flex-1 py-4 px-2 overflow-y-auto space-y-1">
+          {activeLinks.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              onClick={handleLinkClick}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 group ${
+                  isActive
+                    ? 'bg-orange-500 text-white shadow-[0_4px_12px_rgba(249,115,22,0.2)]'
+                    : 'text-gray-400 hover:bg-gray-800/60 hover:text-gray-200'
+                }`
+              }
+            >
+              <span className="flex-shrink-0">{link.icon}</span>
+              {(isOpen) && (
+                <span className="whitespace-nowrap transition-opacity duration-300 opacity-100">
+                  {link.label}
+                </span>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Collapse button at bottom */}
+        <div className="p-3 border-t border-gray-800 bg-gray-950/40 flex justify-center">
+          <button
+            onClick={onToggle}
+            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors focus:outline-none"
+            title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-          </svg>
-        </button>
-      </div>
-    </aside>
+            <svg
+              className={`w-5 h-5 transform transition-transform duration-300 ${
+                isOpen ? 'rotate-0' : 'rotate-180'
+              }`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 

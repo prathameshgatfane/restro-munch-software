@@ -32,15 +32,15 @@ export const DashboardLayout = () => {
 
       {/* Main content body container */}
       <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
-          isSidebarOpen ? 'pl-64' : 'pl-16 sm:pl-20'
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 pl-0 ${
+          isSidebarOpen ? 'md:pl-64' : 'md:pl-20'
         }`}
       >
         {/* Top Navbar */}
-        <Navbar user={user} onLogout={handleLogout} />
+        <Navbar user={user} onLogout={handleLogout} onToggleSidebar={handleToggleSidebar} />
 
         {/* Dynamic Nested Content Route viewport */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           <Outlet />
         </main>
       </div>

@@ -7,9 +7,29 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-size: clamp(15px, 0.6vw + 13px, 18px);
+  }
   body {
     @apply bg-gray-50 text-gray-800 font-sans antialiased selection:bg-orange-100 selection:text-orange-700;
   }
+}
+
+/* Fluid scale corrections for custom tiny font classes */
+.text-\[8px\] {
+  font-size: clamp(10px, 1.2vw, 11px) !important;
+}
+.text-\[9px\] {
+  font-size: clamp(11px, 1.3vw, 12px) !important;
+}
+.text-\[10px\] {
+  font-size: clamp(11px, 1.4vw, 12px) !important;
+}
+
+/* Global touch target helpers */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 /* Custom Scrollbar */

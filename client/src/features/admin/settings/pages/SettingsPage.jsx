@@ -73,7 +73,7 @@ export const SettingsPage = () => {
             />
             <Button
               variant="primary"
-              className="mt-2"
+              className="mt-2 w-full sm:w-auto sm:self-end"
               isLoading={isSavingInfo}
               onClick={handleSaveInfo}
             >
@@ -105,7 +105,7 @@ export const SettingsPage = () => {
             />
             <Button
               variant="primary"
-              className="mt-2"
+              className="mt-2 w-full sm:w-auto sm:self-end"
               isLoading={isSavingTaxes}
               onClick={handleSaveTaxes}
             >

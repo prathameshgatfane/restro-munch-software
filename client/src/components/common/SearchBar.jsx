@@ -35,7 +35,7 @@ export const SearchBar = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full pl-10 pr-9 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white hover:border-gray-300 transition-all"
+        className="w-full pl-10 pr-9 py-3 md:py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm md:text-base text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white hover:border-gray-300 transition-all"
       />
 
       {/* Clear Button */}

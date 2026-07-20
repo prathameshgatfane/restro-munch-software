@@ -21,6 +21,9 @@ const posSlice = createSlice({
     setTables(state, action) {
       state.tables = action.payload;
     },
+    addTable(state, action) {
+      state.tables.push(action.payload);
+    },
     updateTable(state, action) {
       const updatedTable = action.payload;
       const index = state.tables.findIndex((t) => t.id === updatedTable.id);
@@ -121,6 +124,7 @@ const posSlice = createSlice({
 export const {
   setLoading,
   setTables,
+  addTable,
   updateTable,
   setSelectedTableId,
   setMenuData,

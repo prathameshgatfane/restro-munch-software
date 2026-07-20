@@ -24,20 +24,20 @@ export const ReportsPage = () => {
           <h1 className="text-xl font-bold text-gray-900">Reports & Analytics</h1>
           <p className="text-xs text-gray-500 mt-1">Export sales details, analyze inventory consumption and costing</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="flex-1 sm:flex-none px-3 py-2 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 min-h-[40px]"
             />
             <span className="text-gray-400 text-xs">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="flex-1 sm:flex-none px-3 py-2 border border-gray-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 min-h-[40px]"
             />
           </div>
           <Button
@@ -45,6 +45,7 @@ export const ReportsPage = () => {
             size="sm"
             isLoading={isExporting}
             onClick={handleExport}
+            className="w-full sm:w-auto"
           >
             Export Day-End Sales (PDF)
           </Button>

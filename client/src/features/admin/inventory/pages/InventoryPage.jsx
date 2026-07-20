@@ -179,12 +179,12 @@ export const InventoryPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Inventory Stock</h1>
           <p className="text-xs text-gray-500 mt-1">Real-time stock deduction, reorder logs and raw materials</p>
         </div>
-        <Button variant="primary" onClick={handleAddClick}>Add Ingredient</Button>
+        <Button variant="primary" onClick={handleAddClick} className="w-full sm:w-auto">Add Ingredient</Button>
       </div>
 
       <Card>

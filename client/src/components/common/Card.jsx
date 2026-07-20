@@ -22,7 +22,7 @@ export const Card = ({
     >
       {/* Header section */}
       {(title || subtitle || headerActions) && (
-        <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between gap-4">
+        <div className="px-4 py-3 md:px-5 md:py-4 border-b border-gray-50 flex items-center justify-between gap-4">
           <div>
             {title && <h3 className="text-sm font-bold text-gray-900 leading-tight">{title}</h3>}
             {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
@@ -32,11 +32,11 @@ export const Card = ({
       )}
 
       {/* Body section */}
-      <div className="p-5 flex-1 flex flex-col">{children}</div>
+      <div className="p-4 md:p-5 flex-1 flex flex-col">{children}</div>
 
       {/* Footer section */}
       {footer && (
-        <div className="px-5 py-3.5 bg-gray-50/50 border-t border-gray-50 mt-auto flex items-center justify-between text-xs">
+        <div className="px-4 py-3 md:px-5 md:py-3.5 bg-gray-50/50 border-t border-gray-50 mt-auto flex items-center justify-between text-xs">
           {footer}
         </div>
       )}

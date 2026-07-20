@@ -20,7 +20,8 @@ export const MenuManagement = () => {
     categoryId: '',
     price: '',
     available: true,
-    code: ''
+    code: '',
+    image: ''
   });
 
   // Fetch menu data
@@ -64,7 +65,8 @@ export const MenuManagement = () => {
       categoryId: categories[0]?.id || '',
       price: '',
       available: true,
-      code: ''
+      code: '',
+      image: ''
     });
     setIsModalOpen(true);
   };
@@ -77,7 +79,8 @@ export const MenuManagement = () => {
       categoryId: item.categoryId || '',
       price: item.price.toString(),
       available: item.available,
-      code: item.code || ''
+      code: item.code || '',
+      image: item.image || ''
     });
     setIsModalOpen(true);
   };
@@ -133,7 +136,8 @@ export const MenuManagement = () => {
         price: priceNum,
         available: formData.available,
         code: formData.code || formData.name.substring(0, 3).toUpperCase(),
-        isVeg: true
+        isVeg: true,
+        image: formData.image
       };
       setItems((prev) => [...prev, newItem]);
       toast.show(`${formData.name} added successfully!`, 'success');
@@ -150,9 +154,19 @@ export const MenuManagement = () => {
   const renderRow = (item) => (
     <tr key={item.id} className="hover:bg-gray-50/50">
       <td className="px-6 py-4 font-semibold text-gray-900">
-        <div>
-          <span>{item.name}</span>
-          {item.code && <span className="text-[10px] text-gray-400 font-mono block font-normal">{item.code}</span>}
+        <div className="flex items-center gap-3">
+          <img
+            src={item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&auto=format&fit=crop&q=40'}
+            alt={item.name}
+            className="w-10 h-10 rounded-lg object-cover border border-gray-100 flex-shrink-0"
+            onError={(e) => {
+              e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&auto=format&fit=crop&q=40';
+            }}
+          />
+          <div>
+            <span>{item.name}</span>
+            {item.code && <span className="text-[10px] text-gray-400 font-mono block font-normal">{item.code}</span>}
+          </div>
         </div>
       </td>
       <td className="px-6 py-4 text-gray-500">{getCategoryName(item.categoryId)}</td>
@@ -187,12 +201,12 @@ export const MenuManagement = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Menu Catalog</h1>
           <p className="text-xs text-gray-500 mt-1">Configure your categories, variations, addons and base prices</p>
         </div>
-        <Button variant="primary" onClick={handleAddClick}>Add New Item</Button>
+        <Button variant="primary" onClick={handleAddClick} className="w-full sm:w-auto">Add New Item</Button>
       </div>
 
       <Card>
@@ -259,6 +273,13 @@ export const MenuManagement = () => {
             value={formData.code}
             onChange={(e) => setFormData({ ...formData, code: e.target.value })}
             placeholder="e.g. PT-1"
+          />
+
+          <Input
+            label="Image URL"
+            value={formData.image}
+            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+            placeholder="e.g. https://images.unsplash.com/..."
           />
 
           <label className="flex items-center gap-3 p-1 cursor-pointer">

@@ -96,8 +96,8 @@ export const LoginPage = () => {
             />
 
             <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" className="rounded text-orange-500 focus:ring-orange-500" />
+              <label className="flex items-center gap-2 cursor-pointer py-1.5">
+                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer" />
                 <span>Remember me</span>
               </label>
               <button

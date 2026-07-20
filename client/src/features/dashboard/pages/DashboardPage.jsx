@@ -18,7 +18,7 @@ export const DashboardPage = () => {
   return (
     <div className="flex flex-col gap-6">
       {/* Welcome banner */}
-      <div className="bg-gradient-to-r from-orange-500 to-guava-500 p-6 rounded-2xl text-white shadow-md">
+      <div className="bg-gradient-to-r from-orange-500 to-guava-500 p-5 md:p-6 rounded-2xl text-white shadow-md">
         <h1 className="text-xl font-bold">Welcome Back, {user?.name || 'Staff'}!</h1>
         <p className="text-sm opacity-90 mt-1">
           Restro Munch POS is connected and synchronized. Have a great service today!
