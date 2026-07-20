@@ -27,8 +27,8 @@ export const Navbar = ({ user = {}, onLogout, onToggleSidebar }) => {
 
   return (
     <header className="h-16 bg-white border-b border-gray-100 px-4 md:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
-      {/* Left side: Navigation Hamburger & Breadcrumbs */}
-      <div className="flex items-center gap-3 min-w-0">
+      {/* Left side: Navigation Hamburger, Mobile Logo & Breadcrumbs */}
+      <div className="flex items-center gap-2.5 min-w-0">
         <button
           onClick={onToggleSidebar}
           className="md:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors focus:outline-none flex-shrink-0"
@@ -38,6 +38,19 @@ export const Navbar = ({ user = {}, onLogout, onToggleSidebar }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
+
+        {/* Mobile Brand Logo */}
+        <div className="flex items-center gap-1.5 md:hidden flex-shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center text-white font-extrabold text-sm shadow-xs">
+            R
+          </div>
+          <span className="font-extrabold text-gray-900 text-sm tracking-tight hidden sm:inline">
+            Restro<span className="text-orange-500">Munch</span>
+          </span>
+        </div>
+
+        <span className="text-gray-300 hidden sm:inline md:hidden">|</span>
+
         <h2 className="text-xs md:text-sm font-bold text-gray-800 tracking-wide uppercase truncate">
           {getBreadcrumbs()}
         </h2>

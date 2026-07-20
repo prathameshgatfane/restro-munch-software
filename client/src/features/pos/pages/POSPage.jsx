@@ -134,6 +134,7 @@ export const POSPage = () => {
       return;
     }
     dispatch(addToCart({ tableId: selectedTableId, item }));
+    toast.show(`Added ${item.name} (₹${item.price}) to cart`, 'success');
     
     if (selectedTable && selectedTable.status === TABLE_STATUS.AVAILABLE) {
       dispatch(updateTable({ id: selectedTableId, status: TABLE_STATUS.OCCUPIED }));
@@ -172,7 +173,7 @@ export const POSPage = () => {
     toast.show('Order sent to kitchen!', 'success');
     
     setKotModalData({
-      restaurantName: 'Restaurant', // In a real app, fetch from tenants slice
+      restaurantName: 'Restaurant',
       tableNumber: selectedTable?.number,
       kotId: newKOT.kotId,
       timestamp: newKOT.timestamp,
@@ -211,9 +212,6 @@ export const POSPage = () => {
     }
 
     dispatch(moveCart({ sourceTableId: selectedTableId, targetTableId: moveTargetId }));
-    
-    // Also move session if one exists
-    // (A real app would update the tableId in the session object in Redux)
     
     dispatch(updateTable({ id: selectedTableId, status: TABLE_STATUS.AVAILABLE }));
     dispatch(updateTable({ id: moveTargetId, status: TABLE_STATUS.OCCUPIED }));
@@ -282,7 +280,7 @@ export const POSPage = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-5rem)] md:h-[calc(100vh-8rem)] flex flex-col gap-3 md:gap-4 overflow-hidden">
+    <div className="h-[calc(100vh-5rem)] md:h-[calc(100vh-8rem)] flex flex-col gap-3 md:gap-4 overflow-hidden relative">
       {/* Top Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3 md:p-4 rounded-xl border border-gray-100 shadow-xs gap-3 flex-shrink-0">
         <h1 className="text-sm md:text-base font-bold text-gray-900 truncate">
@@ -302,10 +300,10 @@ export const POSPage = () => {
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 overflow-hidden">
-        {/* Floor */}
+        {/* Floor Column */}
         <div className={`lg:col-span-3 bg-white rounded-xl border border-gray-100 p-4 overflow-y-auto flex flex-col gap-3 ${activeMobileTab === 'tables' ? 'flex h-full' : 'hidden lg:flex'}`}>
           <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wide">Tables Grid</h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 pb-16 lg:pb-0">
             {tables.map((table) => {
               const isSelected = selectedTableId === table.id;
               const colorClass = TABLE_STATUS_COLORS[table.status] || 'border-gray-200 bg-gray-50 text-gray-700';
@@ -333,7 +331,7 @@ export const POSPage = () => {
           </div>
         </div>
 
-        {/* Menu */}
+        {/* Menu Column */}
         <div className={`lg:col-span-5 bg-white rounded-xl border border-gray-100 p-4 overflow-y-auto flex flex-col gap-4 ${activeMobileTab === 'menu' ? 'flex h-full' : 'hidden lg:flex'}`}>
           <div className="sticky -top-4 z-10 bg-white pt-4 pb-3 -mt-4 -mx-4 px-4 border-b border-gray-100 flex flex-col gap-3">
             <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wide">Menu Items</h2>
@@ -343,22 +341,30 @@ export const POSPage = () => {
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-24 lg:pb-0">
             {filteredMenuItems.map((item) => (
-              <div key={item.id} onClick={() => handleAddItem(item)} className="border border-gray-100 rounded-lg p-2.5 flex gap-2.5 hover:border-orange-200 cursor-pointer">
-                <img src={item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'} alt={item.name} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+              <div key={item.id} onClick={() => handleAddItem(item)} className="border border-gray-100 rounded-lg p-2.5 flex gap-2.5 hover:border-orange-200 cursor-pointer bg-white">
+                <img 
+                  src={item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=120&auto=format&fit=crop&q=60'} 
+                  alt={item.name} 
+                  className="w-14 h-14 rounded-lg object-cover flex-shrink-0 bg-gray-100" 
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=120&auto=format&fit=crop&q=60';
+                  }}
+                />
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between"><span className="text-xs font-bold truncate">{item.name}</span><span className={`w-2 h-2 rounded-full ${item.isVeg ? 'bg-green-500' : 'bg-red-500'}`} /></div>
                   </div>
-                  <div className="flex justify-between items-center"><span className="text-xs font-bold">₹{item.price}</span><span className="text-orange-500 font-bold">+</span></div>
+                  <div className="flex justify-between items-center"><span className="text-xs font-bold font-mono">₹{item.price}</span><span className="text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded hover:bg-orange-500 hover:text-white transition-colors">+ Add</span></div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Cart */}
+        {/* Cart Column */}
         <div className={`lg:col-span-4 bg-white rounded-xl border border-gray-100 p-4 flex flex-col justify-between overflow-hidden ${activeMobileTab === 'cart' ? 'flex h-full' : 'hidden lg:flex'}`}>
           <div className="flex-1 flex flex-col overflow-hidden">
             <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wide border-b border-gray-50 pb-2 flex justify-between items-center">
@@ -401,7 +407,7 @@ export const POSPage = () => {
                         <div className="flex items-center gap-2">
                           <div className="flex border rounded">
                             <button onClick={() => handleUpdateQty(item.id, item.qty - 1)} className="px-2 bg-gray-50 text-gray-600">-</button>
-                            <span className="px-2">{item.qty}</span>
+                            <span className="px-2 font-mono font-bold">{item.qty}</span>
                             <button onClick={() => handleUpdateQty(item.id, item.qty + 1)} className="px-2 bg-gray-50 text-gray-600">+</button>
                           </div>
                           <span className="font-mono w-12 text-right">₹{(item.price * item.qty).toFixed(2)}</span>
@@ -414,7 +420,7 @@ export const POSPage = () => {
             )}
           </div>
 
-          <div className="border-t border-gray-100 pt-3 flex flex-col gap-2 flex-shrink-0">
+          <div className="border-t border-gray-100 pt-3 flex flex-col gap-2 flex-shrink-0 pb-16 lg:pb-0">
             <div className="flex justify-between text-xs text-gray-500"><span>Subtotal</span><span className="font-mono">₹{subtotal.toFixed(2)}</span></div>
             <div className="flex justify-between text-xs text-gray-500"><span>GST (5%)</span><span className="font-mono">₹{gst.toFixed(2)}</span></div>
             <div className="flex justify-between text-sm font-bold text-gray-900 pt-1"><span>Grand Total</span><span className="font-mono">₹{grandTotal.toFixed(2)}</span></div>
@@ -439,6 +445,61 @@ export const POSPage = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Floating Mobile Cart Summary Bar */}
+      {(currentCart.length > 0 || sentItems.length > 0) && activeMobileTab !== 'cart' && (
+        <div 
+          onClick={() => setActiveMobileTab('cart')}
+          className="lg:hidden sticky bottom-14 z-20 mx-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white p-3 rounded-xl shadow-xl flex justify-between items-center cursor-pointer transform active:scale-98 transition-all border border-orange-400/30"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="bg-white/20 px-2.5 py-1 rounded-lg font-bold text-xs">
+              {currentCart.reduce((sum, i) => sum + i.qty, 0) + sentItems.reduce((sum, i) => sum + i.qty, 0)} Items
+            </div>
+            <div>
+              <div className="text-[10px] text-orange-100 uppercase tracking-wider font-semibold">Active Bill</div>
+              <div className="font-black text-sm font-mono">₹{grandTotal.toFixed(2)}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 font-bold text-xs bg-white text-orange-600 px-3 py-1.5 rounded-lg shadow-sm">
+            <span>View Cart & Settle</span>
+            <span>→</span>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Sticky Tab Navigation */}
+      <div className="lg:hidden sticky bottom-0 z-30 flex border-t border-gray-200 bg-white p-1.5 gap-1.5 shadow-lg flex-shrink-0">
+        <button
+          onClick={() => setActiveMobileTab('tables')}
+          className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+            activeMobileTab === 'tables' ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 bg-gray-50 hover:bg-gray-100'
+          }`}
+        >
+          Tables {selectedTableId && `(T${selectedTableId.replace('T', '')})`}
+        </button>
+        <button
+          onClick={() => setActiveMobileTab('menu')}
+          className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+            activeMobileTab === 'menu' ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 bg-gray-50 hover:bg-gray-100'
+          }`}
+        >
+          Menu
+        </button>
+        <button
+          onClick={() => setActiveMobileTab('cart')}
+          className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all relative ${
+            activeMobileTab === 'cart' ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-600 bg-gray-50 hover:bg-gray-100'
+          }`}
+        >
+          Cart
+          {(currentCart.length > 0 || sentItems.length > 0) && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white w-4.5 h-4.5 rounded-full text-[10px] flex items-center justify-center font-extrabold border-2 border-white shadow-xs">
+              {currentCart.reduce((sum, i) => sum + i.qty, 0) + sentItems.reduce((sum, i) => sum + i.qty, 0)}
+            </span>
+          )}
+        </button>
       </div>
 
       <KOTModal isOpen={!!kotModalData} onClose={() => setKotModalData(null)} kotData={kotModalData} />
