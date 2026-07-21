@@ -1,8 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { getStoredTenants, saveStoredTenants } from '../../../../services/mock/tenantService';
 
 const initialState = {
-  tenants: [], // List of restaurant tenants
-  activeTenantId: localStorage.getItem('activeTenantId') || null,
+  tenants: getStoredTenants(),
+  activeTenantId: localStorage.getItem('activeTenantId') || 'restro_1',
   isLoading: false,
   error: null,
 };
@@ -16,15 +17,28 @@ const restaurantsSlice = createSlice({
     },
     setTenants(state, action) {
       state.tenants = action.payload;
+      saveStoredTenants(action.payload);
     },
     addTenant(state, action) {
-      state.tenants.push(action.payload);
+      state.tenants.unshift(action.payload);
+      saveStoredTenants(state.tenants);
     },
     updateTenantStatus(state, action) {
       const { id, status } = action.payload;
       const tenant = state.tenants.find((t) => t.id === id);
       if (tenant) {
         tenant.subscription.status = status;
+        saveStoredTenants(state.tenants);
+      }
+    },
+    updateTenantSubscription(state, action) {
+      const { id, plan, renewDate, monthlyPrice } = action.payload;
+      const tenant = state.tenants.find((t) => t.id === id);
+      if (tenant) {
+        tenant.subscription.plan = plan;
+        tenant.subscription.renewDate = renewDate;
+        if (monthlyPrice) tenant.subscription.monthlyPrice = monthlyPrice;
+        saveStoredTenants(state.tenants);
       }
     },
     updateTenant(state, action) {
@@ -32,6 +46,7 @@ const restaurantsSlice = createSlice({
       const index = state.tenants.findIndex((t) => t.id === updatedTenant.id);
       if (index !== -1) {
         state.tenants[index] = { ...state.tenants[index], ...updatedTenant };
+        saveStoredTenants(state.tenants);
       }
     },
     setActiveTenantId(state, action) {
@@ -46,6 +61,7 @@ export const {
   setTenants,
   addTenant,
   updateTenantStatus,
+  updateTenantSubscription,
   updateTenant,
   setActiveTenantId,
 } = restaurantsSlice.actions;

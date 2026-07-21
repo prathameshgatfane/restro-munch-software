@@ -1,7 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const storedUser = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+
 const initialState = {
-  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
+  user: storedUser,
   accessToken: localStorage.getItem('accessToken') || null,
   refreshToken: localStorage.getItem('refreshToken') || null,
   isAuthenticated: !!localStorage.getItem('accessToken'),
@@ -30,6 +32,9 @@ const authSlice = createSlice({
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('accessToken', tokens.access);
       localStorage.setItem('refreshToken', tokens.refresh);
+      if (user?.restaurantId) {
+        localStorage.setItem('activeTenantId', user.restaurantId);
+      }
     },
     loginFailure(state, action) {
       state.isLoading = false;
@@ -55,6 +60,16 @@ const authSlice = createSlice({
       localStorage.setItem('accessToken', access);
       localStorage.setItem('refreshToken', refresh);
     },
+    // Super Admin: Switch tenant context for testing/management
+    setTenantContext(state, action) {
+      const { tenantId, tenantName } = action.payload;
+      if (state.user) {
+        state.user.restaurantId = tenantId;
+        state.user.restaurantName = tenantName;
+        localStorage.setItem('user', JSON.stringify(state.user));
+        localStorage.setItem('activeTenantId', tenantId);
+      }
+    }
   },
 });
 
@@ -64,6 +79,7 @@ export const {
   loginFailure,
   logoutSuccess,
   updateUserTokens,
+  setTenantContext,
 } = authSlice.actions;
 
 export default authSlice.reducer;

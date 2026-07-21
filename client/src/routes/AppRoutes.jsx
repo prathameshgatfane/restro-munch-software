@@ -2,6 +2,9 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../features/auth/pages/LoginPage';
 import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage';
+import RestaurantSignUpPage from '../features/auth/pages/RestaurantSignUpPage';
+import SubscriptionExpiredPage from '../features/auth/pages/SubscriptionExpiredPage';
+
 import DashboardPage from '../features/dashboard/pages/DashboardPage';
 import POSPage from '../features/pos/pages/POSPage';
 import KitchenDisplayPage from '../features/kitchen/pages/KitchenDisplayPage';
@@ -10,7 +13,9 @@ import InventoryPage from '../features/admin/inventory/pages/InventoryPage';
 import UsersPage from '../features/admin/users/pages/UsersPage';
 import SettingsPage from '../features/admin/settings/pages/SettingsPage';
 import ReportsPage from '../features/reports/pages/ReportsPage';
+
 import RestaurantManagementPage from '../features/admin/users/pages/RestaurantManagementPage';
+import SuperAdminDashboard from '../features/admin/superadmin/pages/SuperAdminDashboard';
 
 import ProtectedRoute from './ProtectedRoute';
 import RoleBasedRoute from './RoleBasedRoute';
@@ -22,7 +27,9 @@ export const AppRoutes = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/auth/login" element={<LoginPage />} />
+      <Route path="/auth/register" element={<RestaurantSignUpPage />} />
       <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/subscription-expired" element={<SubscriptionExpiredPage />} />
 
       {/* Protected Routes (Wrapped in DashboardLayout) */}
       <Route
@@ -64,15 +71,16 @@ export const AppRoutes = () => {
 
         {/* Staff Credentials Configuration (Admin Only) */}
         <Route
-          element={<RoleBasedRoute roles={[ROLES.ADMIN]} />}
+          element={<RoleBasedRoute roles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]} />}
         >
           <Route path="/admin/users" element={<UsersPage />} />
         </Route>
 
-        {/* Super Admin - SaaS Tenant Management */}
+        {/* Super Admin - SaaS Tenant Portal & Overview */}
         <Route
           element={<RoleBasedRoute roles={[ROLES.SUPER_ADMIN]} />}
         >
+          <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
           <Route path="/super-admin/restaurants" element={<RestaurantManagementPage />} />
         </Route>
       </Route>

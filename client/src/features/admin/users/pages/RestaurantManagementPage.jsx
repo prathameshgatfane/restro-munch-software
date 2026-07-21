@@ -6,16 +6,31 @@ import Button from '../../../../components/common/Button';
 import Modal from '../../../../components/common/Modal';
 import Input from '../../../../components/common/Input';
 import { useToast } from '../../../../services/notifications/useToast';
-import { setTenants, addTenant, updateTenantStatus, setActiveTenantId } from '../slices/restaurantsSlice';
+import {
+  setTenants,
+  addTenant,
+  updateTenantStatus,
+  updateTenantSubscription,
+  setActiveTenantId
+} from '../slices/restaurantsSlice';
+import { tenantService } from '../../../../services/mock/tenantService';
+import { setTenantContext } from '../../../auth/slices/authSlice';
 
 export const RestaurantManagementPage = () => {
   const toast = useToast();
   const dispatch = useDispatch();
   const tenants = useSelector((state) => state.restaurants.tenants);
   const activeTenantId = useSelector((state) => state.restaurants.activeTenantId);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user } = useSelector((state) => state.auth);
 
-  // Form State
+  // Modals state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [subscriptionModalTenant, setSubscriptionModalTenant] = useState(null);
+  const [createdCredentials, setCreatedCredentials] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+
+  // Registration Form State
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -27,35 +42,34 @@ export const RestaurantManagementPage = () => {
     plan: 'Basic',
   });
 
-  // Mock initial fetch
-  useEffect(() => {
-    if (tenants.length === 0) {
-      // Mock data for initial view
-      const mockTenants = [
-        {
-          id: 'restro_1',
-          name: 'Royal Dhaba',
-          slug: 'royaldhaba',
-          type: 'Dhaba',
-          ownerName: 'Rahul Sharma',
-          email: 'rahul@royaldhaba.com',
-          phone: '9876543210',
-          tableCount: 15,
-          subscription: { status: 'Active', plan: 'Premium', renewDate: '2027-01-01' },
-          createdAt: new Date().toISOString()
-        }
-      ];
-      dispatch(setTenants(mockTenants));
-    }
-  }, [dispatch, tenants.length]);
+  // Subscription Edit Form State
+  const [subForm, setSubForm] = useState({
+    plan: 'Basic',
+    durationMonths: 12
+  });
 
-  const headers = [
-    { label: 'Restaurant' },
-    { label: 'Owner Contact' },
-    { label: 'Subscription' },
-    { label: 'Status' },
-    { label: 'Actions', className: 'text-right' }
-  ];
+  // Initial fetch from service
+  useEffect(() => {
+    const loadTenants = async () => {
+      try {
+        const data = await tenantService.getTenants();
+        dispatch(setTenants(data));
+      } catch (err) {
+        console.error('Error loading tenants:', err);
+      }
+    };
+    loadTenants();
+  }, [dispatch]);
+
+  // Filtered tenants list
+  const filteredTenants = tenants.filter((t) => {
+    const matchesSearch =
+      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.ownerName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || t.subscription.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleAddClick = () => {
     setFormData({
@@ -71,83 +85,123 @@ export const RestaurantManagementPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleToggleStatus = (id, currentStatus) => {
+  const handleNameChange = (e) => {
+    const nameVal = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      name: nameVal,
+      slug: nameVal.toLowerCase().replace(/[^a-z0-9]/g, '')
+    }));
+  };
+
+  const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
+    await tenantService.updateStatus(id, newStatus);
     dispatch(updateTenantStatus({ id, status: newStatus }));
     toast.show(`Tenant status changed to ${newStatus}`, 'success');
   };
 
-  const handleSwitchTenant = (id, name) => {
-    dispatch(setActiveTenantId(id));
-    toast.show(`Switched to tenant context: ${name}`, 'success');
+  const handleSwitchTenant = (tenant) => {
+    dispatch(setActiveTenantId(tenant.id));
+    dispatch(setTenantContext({ tenantId: tenant.id, tenantName: tenant.name }));
+    toast.show(`Switched to tenant context: ${tenant.name}`, 'success');
   };
 
-  const handleSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.slug) {
       toast.show('Please fill in all required fields!', 'warning');
       return;
     }
 
-    const newTenant = {
-      id: `restro_${Date.now()}`,
-      name: formData.name,
-      slug: formData.slug,
-      type: formData.type,
-      ownerName: formData.ownerName,
-      email: formData.email,
-      phone: formData.phone,
-      tableCount: formData.tableCount,
-      subscription: {
-        status: 'Active',
-        plan: formData.plan,
-        renewDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
-      },
-      createdAt: new Date().toISOString()
-    };
-
-    dispatch(addTenant(newTenant));
-    toast.show(`${formData.name} added as new tenant!`, 'success');
-    setIsModalOpen(false);
+    try {
+      const result = await tenantService.registerRestaurant(formData);
+      dispatch(addTenant(result.tenant));
+      setCreatedCredentials(result.credentials);
+      setIsModalOpen(false);
+      toast.show(`${formData.name} onboarded as new tenant!`, 'success');
+    } catch (err) {
+      toast.show(err.message || 'Registration failed', 'error');
+    }
   };
+
+  const handleSubscriptionSave = async () => {
+    if (!subscriptionModalTenant) return;
+    try {
+      const updated = await tenantService.updateSubscription(
+        subscriptionModalTenant.id,
+        subForm.plan,
+        subForm.durationMonths
+      );
+      dispatch(updateTenantSubscription({
+        id: subscriptionModalTenant.id,
+        plan: updated.subscription.plan,
+        renewDate: updated.subscription.renewDate,
+        monthlyPrice: updated.subscription.monthlyPrice
+      }));
+      toast.show(`Updated subscription for ${subscriptionModalTenant.name} to ${subForm.plan}!`, 'success');
+      setSubscriptionModalTenant(null);
+    } catch (err) {
+      toast.show(err.message || 'Subscription update failed', 'error');
+    }
+  };
+
+  const headers = [
+    { label: 'Restaurant Tenant' },
+    { label: 'Owner Contact' },
+    { label: 'Subscription Plan' },
+    { label: 'Status' },
+    { label: 'Actions', className: 'text-right' }
+  ];
 
   const renderRow = (item) => (
     <tr key={item.id} className={`hover:bg-gray-50/50 ${activeTenantId === item.id ? 'bg-orange-50/30' : ''}`}>
       <td className="px-6 py-4">
-        <div className="font-semibold text-gray-900">{item.name}</div>
-        <div className="text-xs text-gray-500">{item.slug}.restromunch.com</div>
-        <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">
-          {item.type}
+        <div className="font-bold text-gray-900">{item.name}</div>
+        <div className="text-xs text-gray-500 font-mono">{item.slug}.restromunch.com</div>
+        <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-700">
+          {item.type} • {item.tableCount || 10} Tables
         </span>
       </td>
       <td className="px-6 py-4">
-        <div className="text-sm text-gray-900">{item.ownerName}</div>
+        <div className="text-sm font-semibold text-gray-900">{item.ownerName}</div>
         <div className="text-xs font-mono text-gray-500">{item.email}</div>
         <div className="text-xs font-mono text-gray-500">{item.phone}</div>
       </td>
       <td className="px-6 py-4">
-        <div className="text-sm font-semibold text-gray-900">{item.subscription.plan}</div>
-        <div className="text-xs text-gray-500">Renews: {item.subscription.renewDate}</div>
+        <div className="text-xs font-extrabold text-orange-600 bg-orange-50 px-2 py-1 rounded w-fit border border-orange-200">
+          {item.subscription.plan} (₹{item.subscription.monthlyPrice || 999}/mo)
+        </div>
+        <div className="text-[11px] text-gray-500 mt-1">Renews: {item.subscription.renewDate}</div>
       </td>
       <td className="px-6 py-4">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-          item.subscription.status === 'Active' ? 'bg-green-50 text-green-700' : 
-          item.subscription.status === 'Suspended' ? 'bg-red-50 text-red-700' : 
-          'bg-yellow-50 text-yellow-700'
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+          item.subscription.status === 'Active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
         }`}>
           {item.subscription.status}
         </span>
       </td>
-      <td className="px-6 py-4 text-right space-x-2">
+      <td className="px-6 py-4 text-right space-x-1.5">
         <button
-          onClick={() => handleSwitchTenant(item.id, item.name)}
-          className={`text-xs font-semibold px-2 py-1 border rounded ${activeTenantId === item.id ? 'bg-orange-100 text-orange-800 border-orange-200' : 'text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+          onClick={() => handleSwitchTenant(item)}
+          className={`text-xs font-bold px-2 py-1 border rounded transition-colors ${
+            activeTenantId === item.id ? 'bg-orange-500 text-white border-orange-500 shadow-xs' : 'text-gray-700 border-gray-200 hover:bg-gray-100'
+          }`}
         >
-          {activeTenantId === item.id ? 'Active Context' : 'Switch Context'}
+          {activeTenantId === item.id ? '✓ Active Context' : 'Switch Context'}
+        </button>
+        <button
+          onClick={() => {
+            setSubscriptionModalTenant(item);
+            setSubForm({ plan: item.subscription.plan, durationMonths: 12 });
+          }}
+          className="text-xs font-bold px-2 py-1 border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded"
+        >
+          Plan
         </button>
         <button
           onClick={() => handleToggleStatus(item.id, item.subscription.status)}
-          className={`text-xs font-semibold px-2 py-1 border rounded ${
+          className={`text-xs font-bold px-2 py-1 border rounded ${
             item.subscription.status === 'Active' ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'
           }`}
         >
@@ -159,82 +213,116 @@ export const RestaurantManagementPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">SaaS Tenant Management</h1>
-          <p className="text-xs text-gray-500 mt-1">Manage onboarded restaurants, subscriptions, and access</p>
+          <h1 className="text-xl font-bold text-gray-900">SaaS Multi-Tenant Management</h1>
+          <p className="text-xs text-gray-500 mt-0.5">Register new restaurant clients, manage subscription plans, and switch tenant context</p>
         </div>
-        <Button variant="primary" onClick={handleAddClick} className="w-full sm:w-auto">Register New Tenant</Button>
+        <Button variant="primary" onClick={handleAddClick} className="w-full sm:w-auto">
+          + Register New Restaurant
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="p-4 shadow-sm">
-          <div className="text-gray-500 text-xs font-bold uppercase">Total Tenants</div>
+      {/* Stat Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="p-4 shadow-xs">
+          <div className="text-gray-500 text-xs font-bold uppercase">Total Onboarded Tenants</div>
           <div className="text-2xl font-black text-gray-900 mt-1">{tenants.length}</div>
         </Card>
-        <Card className="p-4 shadow-sm">
+        <Card className="p-4 shadow-xs">
           <div className="text-gray-500 text-xs font-bold uppercase">Active Subscriptions</div>
-          <div className="text-2xl font-black text-green-600 mt-1">{tenants.filter(t => t.subscription.status === 'Active').length}</div>
+          <div className="text-2xl font-black text-green-600 mt-1">
+            {tenants.filter((t) => t.subscription.status === 'Active').length}
+          </div>
+        </Card>
+        <Card className="p-4 shadow-xs">
+          <div className="text-gray-500 text-xs font-bold uppercase">Suspended Accounts</div>
+          <div className="text-2xl font-black text-red-600 mt-1">
+            {tenants.filter((t) => t.subscription.status === 'Suspended').length}
+          </div>
         </Card>
       </div>
 
-      <Card>
-        <Table
-          headers={headers}
-          data={tenants}
-          renderRow={renderRow}
-        />
+      {/* Search and Filters */}
+      <Card className="p-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="w-full sm:w-80">
+          <Input
+            placeholder="Search by restaurant name, owner, or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <span className="text-xs text-gray-500 font-semibold">Status:</span>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
+          >
+            <option value="All">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Suspended">Suspended</option>
+          </select>
+        </div>
       </Card>
 
+      {/* Table List */}
+      <Card>
+        <Table headers={headers} data={filteredTenants} renderRow={renderRow} />
+      </Card>
+
+      {/* Register Tenant Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Register New Tenant"
+        title="Register New Restaurant Tenant"
         footerActions={
           <>
             <Button variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button variant="primary" size="sm" onClick={handleSubmit}>Register Tenant</Button>
+            <Button variant="primary" size="sm" onClick={handleRegisterSubmit}>Register & Create Admin</Button>
           </>
         }
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleRegisterSubmit} className="flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Restaurant Name *"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g. Pizza Hub"
+              onChange={handleNameChange}
+              placeholder="e.g. Royal Dhaba"
               required
             />
             <Input
               label="Subdomain Slug *"
               value={formData.slug}
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              placeholder="e.g. pizzahub"
+              placeholder="e.g. royaldhaba"
               required
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Owner Name"
+              label="Owner Full Name *"
               value={formData.ownerName}
               onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-              placeholder="e.g. Ramesh Kumar"
+              placeholder="e.g. Rahul Sharma"
+              required
             />
             <Input
-              label="Email Address *"
+              label="Owner Email Address *"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="e.g. owner@pizzahub.com"
+              placeholder="e.g. owner@royaldhaba.com"
               required
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Phone Number"
+              label="Owner Phone Number"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="e.g. 9876543210"
@@ -244,41 +332,113 @@ export const RestaurantManagementPage = () => {
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-3 md:px-3.5 md:py-2.5 bg-white border border-gray-200 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option value="Restaurant">Restaurant</option>
                 <option value="Dhaba">Dhaba</option>
                 <option value="Cafe">Cafe</option>
                 <option value="Bar">Bar</option>
                 <option value="Cloud Kitchen">Cloud Kitchen</option>
-                <option value="Food Court">Food Court</option>
               </select>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <Input
-              label="Initial Table Count"
+            <Input
+              label="Seating Tables Count"
               type="number"
               value={formData.tableCount}
-              onChange={(e) => setFormData({ ...formData, tableCount: parseInt(e.target.value) || 0 })}
+              onChange={(e) => setFormData({ ...formData, tableCount: parseInt(e.target.value, 10) || 0 })}
             />
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-gray-700 tracking-wide">Subscription Plan</label>
               <select
                 value={formData.plan}
                 onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
-                className="w-full px-4 py-3 md:px-3.5 md:py-2.5 bg-white border border-gray-200 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
-                <option value="Basic">Basic (Monthly)</option>
-                <option value="Premium">Premium (Yearly)</option>
-                <option value="Enterprise">Enterprise</option>
+                <option value="Basic">Basic (₹999/mo)</option>
+                <option value="Premium">Premium (₹2,999/mo)</option>
+                <option value="Enterprise">Enterprise (₹4,999/mo)</option>
               </select>
             </div>
           </div>
-
         </form>
       </Modal>
+
+      {/* Manage Subscription Modal */}
+      {subscriptionModalTenant && (
+        <Modal
+          isOpen={true}
+          onClose={() => setSubscriptionModalTenant(null)}
+          title={`Update Subscription: ${subscriptionModalTenant.name}`}
+          footerActions={
+            <>
+              <Button variant="outline" size="sm" onClick={() => setSubscriptionModalTenant(null)}>Cancel</Button>
+              <Button variant="primary" size="sm" onClick={handleSubscriptionSave}>Save Subscription</Button>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-gray-700">Select New Plan</label>
+              <select
+                value={subForm.plan}
+                onChange={(e) => setSubForm({ ...subForm, plan: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="Basic">Basic Plan (₹999/mo)</option>
+                <option value="Premium">Premium Plan (₹2,999/mo)</option>
+                <option value="Enterprise">Enterprise Plan (₹4,999/mo)</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-gray-700">Extend Duration</label>
+              <select
+                value={subForm.durationMonths}
+                onChange={(e) => setSubForm({ ...subForm, durationMonths: parseInt(e.target.value, 10) })}
+                className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="1">1 Month</option>
+                <option value="6">6 Months</option>
+                <option value="12">12 Months (1 Year)</option>
+                <option value="24">24 Months (2 Years)</option>
+              </select>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Generated Admin Credentials Modal */}
+      {createdCredentials && (
+        <Modal
+          isOpen={true}
+          onClose={() => setCreatedCredentials(null)}
+          title="🎉 Admin Credentials Generated"
+          footerActions={
+            <Button variant="primary" size="sm" onClick={() => setCreatedCredentials(null)}>
+              Done
+            </Button>
+          }
+        >
+          <div className="flex flex-col gap-3">
+            <p className="text-xs text-gray-600">
+              Give these admin credentials to the restaurant owner so they can log in:
+            </p>
+            <div className="bg-gray-900 text-white p-4 rounded-xl font-mono text-xs space-y-2">
+              <div className="flex justify-between border-b border-gray-800 pb-1.5">
+                <span className="text-gray-400">Admin Email:</span>
+                <span className="text-green-400 font-bold">{createdCredentials.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Temp Password:</span>
+                <span className="text-yellow-400 font-bold select-all">{createdCredentials.tempPassword}</span>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

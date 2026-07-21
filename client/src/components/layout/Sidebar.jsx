@@ -13,6 +13,26 @@ export const Sidebar = ({ isOpen, onToggle, userRole = ROLES.ADMIN }) => {
   // Navigation links definition
   const allLinks = [
     {
+      to: '/super-admin/dashboard',
+      label: 'Super Admin Overview',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+        </svg>
+      ),
+      roles: [ROLES.SUPER_ADMIN],
+    },
+    {
+      to: '/super-admin/restaurants',
+      label: 'SaaS Restaurants',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+      roles: [ROLES.SUPER_ADMIN],
+    },
+    {
       to: '/dashboard',
       label: 'Dashboard',
       icon: (
@@ -70,7 +90,7 @@ export const Sidebar = ({ isOpen, onToggle, userRole = ROLES.ADMIN }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       ),
-      roles: [ROLES.ADMIN],
+      roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
     },
     {
       to: '/reports',
@@ -92,16 +112,6 @@ export const Sidebar = ({ isOpen, onToggle, userRole = ROLES.ADMIN }) => {
         </svg>
       ),
       roles: [ROLES.ADMIN, ROLES.MANAGER],
-    },
-    {
-      to: '/super-admin/restaurants',
-      label: 'SaaS Restaurants',
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      ),
-      roles: [ROLES.SUPER_ADMIN],
     },
   ];
 
@@ -133,11 +143,11 @@ export const Sidebar = ({ isOpen, onToggle, userRole = ROLES.ADMIN }) => {
         {/* Brand Header */}
         <div className="h-16 flex items-center px-4 border-b border-gray-800 bg-gray-950 gap-3 overflow-hidden">
           {/* Themed Logo symbol */}
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-orange-500 to-guava-500 flex items-center justify-center flex-shrink-0 font-bold text-white text-sm shadow">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0 font-bold text-white text-sm shadow">
             RM
           </div>
           {isOpen && (
-            <span className="font-bold text-white text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 to-guava-400 bg-clip-text text-transparent">
+            <span className="font-bold text-white text-sm tracking-wider uppercase bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">
               Restro Munch
             </span>
           )}
